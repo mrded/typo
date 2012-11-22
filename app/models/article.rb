@@ -122,6 +122,11 @@ class Article < Content
 
   end
 
+  def stripped_title
+    remove_accents(title).gsub(/<[^>]*>/, '').to_url
+  end
+
+
   def year_url
     published_at.year.to_s
   end
@@ -414,6 +419,23 @@ class Article < Content
 
   def access_by?(user)
     user.admin? || user_id == user.id
+  end
+
+  def merge_with(target_id)
+    target = Article.find_by_id(target_id)
+    target_comments = Comment.find_all_by_article_id(target_id)
+    if target
+      self.body = self.body + " " + target.body
+      target_comments.each do |comment|
+        comment.article_id = self.id
+        comment.save!
+      end
+      target.destroy
+      self.save
+      return true
+    else
+      return false
+    end
   end
 
   protected

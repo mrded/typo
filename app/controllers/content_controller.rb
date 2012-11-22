@@ -20,6 +20,17 @@ class ContentController < ApplicationController
   before_filter :setup_themer
   helper :theme
 
+  def merge_articles
+    if current_user.admin?
+      if (Article.find_by_id(params[:id]).merge_with(params[:merge_id]))
+        flash[:notice] = "Article number #{params[:merge_id]} merged with current article (#{params[:id]})"
+      else
+        flash[:error] = "Article number #{params[:merge_id]} failed to merge with current article (#{params[:id]})"
+      end
+      redirect_to :action => "edit", :id => params[:id]
+    end
+  end
+
   protected
 
   # TODO: Make this work for all content.
